@@ -18,7 +18,7 @@
 
 #
 # Quack 1.5 beta - Quality assurance tool for text scanning projects.
-# 
+#
 # Generates zoomable (OpenSeadragon) views of scanned text pages with overlays
 # containing OCR-text from ALTO-files. The views are static HTML pages that
 # can be viewed directly from the file system or through a webserver.
@@ -26,7 +26,7 @@
 # Note that the images used for OpenSeadragon are PNG.
 # The focus is fully on QA, where pixel-perfect reproduction is required.
 #
-# The script supports iterative updates by re-using existing structures when 
+# The script supports iterative updates by re-using existing structures when
 # source files are added and the script is executed again. The destination
 # folder is fully self-contained and suitable for mounting under a webserver
 # with no access to the original files.
@@ -136,7 +136,7 @@ export CROP_PERCENT=""
 # auto: GraphicsMagick (high mem, faster)
 export HISTOGRAM_PHEIGHT="script_auto"
 
-# If true, tiles are generated for OpenSeadragon. This requires Robert Barta's 
+# If true, tiles are generated for OpenSeadragon. This requires Robert Barta's
 # deepzoom (see link in README.md) and will generate a lot of 260x260 pixel tiles.
 # If false, a single image will be used with OpenSeadragon. This is a lot heavier
 # on the browser but avoids the size and file-count overhead of the tiles.
@@ -152,7 +152,7 @@ export IIPSRV_DZI_EXT=".jp2.dzi"
 # If IIPSRV is defined, symlinked images will be resolved to their source
 # before being used as paths for the image server
 export IIPSRV_FOLLOW_SYMLINKS="true"
-# Hack for resolving the source image 
+# Hack for resolving the source image
 # TODO: Avoid this by passing the real source image
 export IIPSRV_FOLLOW_SYMLINKS_EXTHACK=".jp2"
 # If a symlink is followed and the symlinks root is defined, this is used instead of
@@ -160,7 +160,7 @@ export IIPSRV_FOLLOW_SYMLINKS_EXTHACK=".jp2"
 export IIPSRV_FOLLOW_SYMLINKS_ROOT=""
 
 # If true, a secondary view of the scans will be inserted into the page.
-# The view represents an end-user version of the scan. This will often be 
+# The view represents an end-user version of the scan. This will often be
 # downscaled, levelled, sharpened and JPEG'ed.
 export PRESENTATION="true"
 # The image format for the presentation image. Possible values are png and jpg.
@@ -207,7 +207,7 @@ export SPECIFIC_IMAGE_SNIPPET_EXTENSION=".snippet"
 OSD_ZIP="openseadragon-bin-1.0.0.zip"
 OSD_DIRECT="http://github.com/openseadragon/openseadragon/releases/download/v1.0.0/$OSD_ZIP"
 
-# The blacklist and whitelist are files with regular expressions, used when traversing the 
+# The blacklist and whitelist are files with regular expressions, used when traversing the
 # source folder. One expression/line.
 export BLACKLIST="quack.blacklist"
 export WHITELIST="quack.whitelist"
@@ -284,7 +284,7 @@ export HIST_TIMING=`createCounter hist_timing 0`
 export TOTAL_TIMING=`createCounter total_timing 0`
 
 ALL_COUNTERS="$PAGE_COUNTER $MAGE_COUNTER $HIST_COUNTER $TILE_TIMING $QA_TIMING $PRESENTATION_TIMING $THUMB_TIMING $HIST_TIMING $OVERLAY_TIMING $TOTAL_TIMING"
-TOTAL_START_TIME=`date +%s%N`
+TOTAL_START_TIME=`gdate +%s%N`
 
 
 function check_dependencies() {
@@ -381,7 +381,7 @@ function copyFiles () {
 # http://stackoverflow.com/questions/14434549/how-to-expand-shell-variables-in-a-text-file
 # Input: template-file
 function ctemplate() {
-    local TMP="`mktemp --suffix .sh`"
+    local TMP="`gmktemp --suffix .sh`"
     echo 'cat <<END_OF_TEXT' >  $TMP
     cat  "$1"                >> $TMP
     echo 'END_OF_TEXT'       >> $TMP
@@ -505,7 +505,7 @@ function makeImages() {
     # Even if TILE="true", we create the full main presentational image as it
     # might be requested for download
     if shouldGenerate "$FORCE_QAIMAGE" "$DEST_IMAGE" "QA (${CREATED_IMAGES}/${TOTAL_IMAGES})"; then
-        local START=`date +%s%N`
+        local START=`gdate +%s%N`
         ensureIntermediate "$SOURCE_IMAGE" "$GM_INTERMEDIATE"
         gm convert "$GM_INTERMEDIATE" $QA_EXTRA -quality $IMAGE_DISP_QUALITY "$DEST_IMAGE"
         updateTiming $QA_TIMING $START > /dev/null
@@ -519,7 +519,7 @@ function makeImages() {
     fi
 
     if [ ".true" == ".$PRESENTATION" ]; then
-        local START=`date +%s%N`
+        local START=`gdate +%s%N`
         if shouldGenerate "$FORCE_PRESENTATION" "$PRESENTATION_IMAGE" "presentation"; then
             $PRESENTATION_SCRIPT "$CONV" "$PRESENTATION_IMAGE"
         fi
@@ -527,7 +527,7 @@ function makeImages() {
     fi
 
     if [ ".true" == ".$TILE" ]; then
-        local START=`date +%s%N`
+        local START=`gdate +%s%N`
         if shouldGenerate "$FORCE_TILES" "$TILE_FOLDER" "tiles"; then
        # TODO: Specify JPEG quality
             deepzoom "$CONV" -format $IMAGE_DISP_EXT -path "${DEST_FOLDER}/"
@@ -546,7 +546,7 @@ function makeImages() {
         updateTiming $TILE_TIMING $START > /dev/null
     fi
 
-    local START_OVERLAY=`date +%s%N`
+    local START_OVERLAY=`gdate +%s%N`
     if shouldGenerate "$FORCE_BLOWN" "$WHITE_IMAGE" "overlay"; then
         ensureIntermediate "$SOURCE_IMAGE" "$GM_INTERMEDIATE"
         gm convert "$GM_INTERMEDIATE" -black-threshold $BLOWN_WHITE_BT -white-threshold $BLOWN_WHITE_WT -negate -fill \#$OVERLAY_WHITE -opaque black -colors 2 -matte -transparent white  "$WHITE_IMAGE"
@@ -558,7 +558,7 @@ function makeImages() {
     fi
     updateTiming $OVERLAY_TIMING $START_OVERLAY > /dev/null
 
-    local START_THUMB=`date +%s%N`
+    local START_THUMB=`gdate +%s%N`
     if shouldGenerate "$FORCE_THUMBNAILS" "$THUMB_IMAGE" "thumbnail"; then
         ensureIntermediate "$SOURCE_IMAGE" "$GM_INTERMEDIATE"
         gm convert "$GM_INTERMEDIATE" -sharpen 3 -enhance -resize $THUMB_IMAGE_SIZE "$THUMB_IMAGE"
@@ -578,7 +578,7 @@ function makeImages() {
     fi
 
     removeIntermediate "$GM_INTERMEDIATE"
-        
+
     updateTiming $THUMB_TIMING $START_THUMB > /dev/null
 }
 export -f makeImages
@@ -593,7 +593,7 @@ function makeHistograms() {
     local PRESENTATION_SCRIPT="$6"
     local TILE="$7"
 
-    local START=`date +%s%N`
+    local START=`gdate +%s%N`
 #    echo "makeImages $SRC_FOLDER $DEST_FOLDER"
 
     local SANS_PATH=${IMAGE##*/}
@@ -683,7 +683,7 @@ function makeIndex() {
     pushd "$SRC_FOLDER" > /dev/null
     local SRC_FOLDER=`pwd`
     popd > /dev/null
-    echo "Processing $SRC_FOLDER `date +%H:%M:%S`"
+    echo "Processing $SRC_FOLDER `gdate +%H:%M:%S`"
 
     if [ ! -d "$DEST_FOLDER" ]; then
 #        echo "Creating folder $DEST_FOLDER"
@@ -748,7 +748,7 @@ function makeIndex() {
         .name_rev) local SUBS=`ls "$SRC_FOLDER" | tac` ;;
         *) local SUBS=`ls "$SRC_FOLDER"` ;;
     esac
-        
+
     if [ "." == ".$SUBS" ]; then
         SUBFOLDERS_HTML="<p>No subfolders</p>"$'\n'
     else
@@ -756,7 +756,7 @@ function makeIndex() {
         # TODO: Make the iterator handle spaces
         for F in $SUBS; do
             if [ -d $F ]; then
-                local CHANGED=`date -r "$SRC_FOLDER/$F" +%Y%m%d-%H%M`
+                local CHANGED=`gdate -r "$SRC_FOLDER/$F" +%Y%m%d-%H%M`
                 pushd "$SRC_FOLDER/$F" > /dev/null
                 local SUB_COUNT=`listImages true | wc -l`
                 popd > /dev/null
@@ -772,7 +772,7 @@ function makeIndex() {
     else
         EDITION_HTML=""
         for E in *.Edition.xml; do
-            local EDTMP=`mktemp`
+            local EDTMP=`gmktemp`
             # echo to get newlines
             EDITION_HTML="${EDITION_HTML}<p>$E</p>"$'\n'
             EDITION_HTML="${EDITION_HTML}<pre>"$'\n'
@@ -794,7 +794,7 @@ function makeIndex() {
 
     # UP, PARENT, SRC_FOLDER, DEST_FOLDER, ILIST_HTML, THUMBS_HTML, HISTOGRAMS_HTML, SUBFOLDERS_HTML, EDITION_HTML, SNIPPET
     ctemplate $FOLDER_TEMPLATE > $PP
-    
+
     # Generate pages for sub folders
     # We do this at the end to avoid overriding of variables
     for F in $SUBS; do
@@ -827,7 +827,7 @@ function performanceStats() {
     echo " - overlays (cpu): `pAverage "$OVERLAY_TIMING"`"
 }
 
-echo "Quack starting at `date`"
+echo "Quack starting at `gdate`"
 check_dependencies
 copyFiles
 pushd "$SOURCE" > /dev/null
@@ -839,5 +839,5 @@ performanceStats
 for COUNTER in $ALL_COUNTERS; do
     deleteCount $COUNTER
 done
-echo "All done at `date`"
+echo "All done at `gdate`"
 echo "Please open ${DEST}/index.html in a browser"

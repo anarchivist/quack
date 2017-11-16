@@ -61,7 +61,7 @@ export -f addGetCounter
 function updateTiming() {
     local START=$2
     local START=${START:0:${#START}-6}
-    local END=`date +%s%N`
+    local END=`gdate +%s%N`
     local END=${END:0:${#END}-6}
     addDeltaGetCounter $1 $((END-START))
 }
