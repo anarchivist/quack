@@ -49,7 +49,7 @@ export IMAGE_GLOB="*.tiff *.tif *.jp2 *.jpeg2000 *.j2k *.jpg *.jpeg"
 # ALTO files are expected to be located next to the image files:
 #   OurScanProject_batch_2013-09-18_page_007.tif
 #   OurScanProject_batch_2013-09-18_page_007.alto.xml
-export ALTO_EXT=".alto.xml"
+export ALTO_EXT=".xml"
 
 # Sometimes the image corresponding to the ALTO has been scaled after ALTO
 # generation. This factor will be multiplied to all ALTO elements. If the
@@ -75,7 +75,7 @@ export THUMB_IMAGE_SIZE="300x200"
 export ALTO_ELEMENTS="processingDateTime softwareName softwareVersion"
 
 # Number of threads used for image processing. CPU and memory bound.
-export THREADS=4
+export THREADS=8
 
 # Number of threads used for histograms. Note that histogram generation
 # is very memory hungry (~2GB for a 30MP image), unless HISTOGRAM_PHEIGHT
